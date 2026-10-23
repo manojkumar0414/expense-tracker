@@ -70,6 +70,11 @@ input:focus, textarea:focus, select:focus {
   }
 }
 
+/* Force emoji rendering */
+div, button, span, p {
+  font-variant-emoji: normal;
+}
+
 /* Mobile header responsive */
 @media (max-width: 640px) {
   header {
