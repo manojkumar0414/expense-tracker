@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -X POST http://localhost:5000/api/auth/register -H 'Content-Type: application/json' -d '{\"username\":\"quick1\",\"password\":\"q1\",\"email\":\"q1@test.com\"}')",
+      "Bash(curl -s -X POST http://localhost:5000/api/categories -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJpYXQiOjE3OTI3NTYxODIsImV4cCI6MTc5Mjg0MjU4Mn0.pTGdZwNU4ElYh1w0ypmNR7NtlL2uRbwrhGgpfyd-dEA' -d '{\"name\":\"Test\",\"icon\":\"📦\"}')"
+    ]
+  }
+}

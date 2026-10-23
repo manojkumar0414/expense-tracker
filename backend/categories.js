@@ -1,0 +1,61 @@
+import express from 'express';
+import { executeQuery } from './db.js';
+
+const router = express.Router();
+
+// Get all categories for a user
+router.get('/', async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const categories = await executeQuery(
+      'SELECT CategoryId as id, Name as name, Icon as icon FROM Categories WHERE UserId = @userId ORDER BY CategoryId',
+      { userId }
+    );
+
+    res.json(categories);
+  } catch (err) {
+    console.error('Error fetching categories:', err.message);
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+// Add a new category
+router.post('/', async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { name, icon } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Category name is required' });
+    }
+
+    const result = await executeQuery(
+      `INSERT INTO Categories (UserId, Name, Icon, CreatedAt)
+       VALUES (@userId, @name, @icon, GETDATE())
+       SELECT SCOPE_IDENTITY() as CategoryId`,
+      { userId, name, icon: icon || null }
+    );
+
+    const categoryId = result[0]?.CategoryId;
+
+    const category = await executeQuery(
+      'SELECT CategoryId as id, Name as name, Icon as icon FROM Categories WHERE CategoryId = @categoryId',
+      { categoryId }
+    );
+
+    res.status(201).json(category[0]);
+  } catch (err) {
+    console.error('Error adding category:', err.message);
+    res.status(500).json({ error: 'Failed to add category' });
+  }
+});
+
+export default router;

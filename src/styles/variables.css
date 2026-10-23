@@ -1,0 +1,73 @@
+/* Light theme (default) */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-light: #dbeafe;
+  --color-primary-dark: #1e40af;
+
+  --color-success: #16a34a;
+  --color-warning: #ea580c;
+  --color-danger: #dc2626;
+
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-border: #e5e7eb;
+  --color-text: #1f2937;
+  --color-text-secondary: #6b7280;
+
+  --color-category-milk: #ffa6a6;
+  --color-category-gas: #ff9966;
+  --color-category-electricity: #ffdd66;
+  --color-category-emi: #99ccff;
+  --color-category-groceries: #99ff99;
+  --color-category-vegetables: #aaff88;
+  --color-category-rent: #ccaaff;
+  --color-category-mobile: #ffccff;
+  --color-category-medical: #ff99cc;
+  --color-category-education: #ffbb99;
+  --color-category-transport: #99ffdd;
+  --color-category-other: #e5e7eb;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+
+  --border-radius: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-full: 9999px;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1f2937;
+    --color-bg-secondary: #111827;
+    --color-border: #374151;
+    --color-text: #f9fafb;
+    --color-text-secondary: #d1d5db;
+  }
+}
+
+/* Override when data-theme attribute is set */
+:root[data-theme="dark"] {
+  --color-bg: #1f2937;
+  --color-bg-secondary: #111827;
+  --color-border: #374151;
+  --color-text: #f9fafb;
+  --color-text-secondary: #d1d5db;
+}
+
+:root[data-theme="light"] {
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-border: #e5e7eb;
+  --color-text: #1f2937;
+  --color-text-secondary: #6b7280;
+}
