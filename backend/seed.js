@@ -1,9 +1,8 @@
 import { executeQuery } from './db.js';
-import bcrypt from 'bcryptjs';
 
 export async function seed() {
   try {
-    console.log('🌱 Starting database initialization...');
+    console.log('🌱 Creating database tables...');
 
     await executeQuery(`
       CREATE TABLE IF NOT EXISTS "Users" (
@@ -14,15 +13,7 @@ export async function seed() {
         "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log('✓ Users table initialized');
-
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    await executeQuery(`
-      INSERT INTO "Users" ("Username", "Password", "Email") VALUES
-      ('admin', $1, 'admin@expensetracker.com')
-      ON CONFLICT ("Username") DO NOTHING;
-    `, [hashedPassword]);
-    console.log('✓ Default admin user created');
+    console.log('✓ Users table created');
 
     await executeQuery(`
       CREATE TABLE IF NOT EXISTS "Categories" (
@@ -33,7 +24,7 @@ export async function seed() {
         "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log('✓ Categories table initialized');
+    console.log('✓ Categories table created');
 
     await executeQuery(`
       CREATE TABLE IF NOT EXISTS "Expenses" (
@@ -46,26 +37,8 @@ export async function seed() {
         "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log('✓ Expenses table initialized');
-
-    await executeQuery(`
-      INSERT INTO "Categories" ("UserId", "Name", "Icon") VALUES
-      (1, 'Milk', '🥛'),
-      (1, 'Gas', '⛽'),
-      (1, 'Electricity', '⚡'),
-      (1, 'EMI / Loan', '🏦'),
-      (1, 'Groceries', '🛒'),
-      (1, 'Vegetables', '🥬'),
-      (1, 'Rent', '🏠'),
-      (1, 'Mobile / Internet', '📱'),
-      (1, 'Medical', '⚕️'),
-      (1, 'Education', '📚'),
-      (1, 'Transport', '🚗'),
-      (1, 'Other', '📌')
-      ON CONFLICT DO NOTHING;
-    `);
-    console.log('✓ Default categories initialized');
-    console.log('✅ Database ready!\n');
+    console.log('✓ Expenses table created');
+    console.log('✅ Database ready! Tables created. You can now register and create your own users.\n');
   } catch (err) {
     console.error('❌ Database error:', err.message);
   }
