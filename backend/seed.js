@@ -1,4 +1,5 @@
 import { executeQuery } from './db.js';
+import bcrypt from 'bcryptjs';
 
 export async function seed() {
   try {
@@ -14,6 +15,14 @@ export async function seed() {
       );
     `);
     console.log('✓ Users table initialized');
+
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    await executeQuery(`
+      INSERT INTO "Users" ("Username", "Password", "Email") VALUES
+      ('admin', $1, 'admin@expensetracker.com')
+      ON CONFLICT ("Username") DO NOTHING;
+    `, [hashedPassword]);
+    console.log('✓ Default admin user created');
 
     await executeQuery(`
       CREATE TABLE IF NOT EXISTS "Categories" (
