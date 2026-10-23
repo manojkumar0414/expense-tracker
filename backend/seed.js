@@ -1,39 +1,67 @@
-import bcrypt from 'bcryptjs';
 import { executeQuery } from './db.js';
 
-async function seedDatabase() {
+export async function seed() {
   try {
-    console.log('🌱 Seeding database with hashed passwords...');
+    console.log('🌱 Starting database initialization...');
 
-    // Delete existing users
-    await executeQuery('DELETE FROM Users');
-    console.log('✓ Cleared existing users');
-
-    // Create sample users with hashed passwords
-    const users = [
-      { username: 'admin', password: 'admin123', email: 'admin@example.com' },
-      { username: 'user1', password: 'user123', email: 'user1@example.com' },
-    ];
-
-    for (const user of users) {
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      await executeQuery(
-        'INSERT INTO Users (Username, Password, Email) VALUES (@username, @password, @email)',
-        { username: user.username, password: hashedPassword, email: user.email }
+    await executeQuery(`
+      CREATE TABLE IF NOT EXISTS "Users" (
+        "UserId" SERIAL PRIMARY KEY,
+        "Username" VARCHAR(100) NOT NULL UNIQUE,
+        "Password" VARCHAR(255) NOT NULL,
+        "Email" VARCHAR(100),
+        "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-      console.log(`✓ Created user: ${user.username}`);
-    }
+    `);
+    console.log('✓ Users table initialized');
 
-    console.log('\n✅ Database seeded successfully!');
-    console.log('\nYou can now login with:');
-    console.log('  Username: admin, Password: admin123');
-    console.log('  Username: user1, Password: user123');
+    await executeQuery(`
+      CREATE TABLE IF NOT EXISTS "Categories" (
+        "CategoryId" SERIAL PRIMARY KEY,
+        "UserId" INTEGER NOT NULL REFERENCES "Users"("UserId") ON DELETE CASCADE,
+        "Name" VARCHAR(100) NOT NULL,
+        "Icon" VARCHAR(50),
+        "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('✓ Categories table initialized');
 
-    process.exit(0);
+    await executeQuery(`
+      CREATE TABLE IF NOT EXISTS "Expenses" (
+        "ExpenseId" SERIAL PRIMARY KEY,
+        "UserId" INTEGER NOT NULL REFERENCES "Users"("UserId") ON DELETE CASCADE,
+        "CategoryId" INTEGER NOT NULL REFERENCES "Categories"("CategoryId") ON DELETE CASCADE,
+        "Amount" DECIMAL(10, 2) NOT NULL,
+        "Date" DATE NOT NULL,
+        "Note" VARCHAR(500),
+        "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('✓ Expenses table initialized');
+
+    await executeQuery(`
+      INSERT INTO "Categories" ("UserId", "Name", "Icon") VALUES
+      (1, 'Milk', '🥛'),
+      (1, 'Gas', '⛽'),
+      (1, 'Electricity', '⚡'),
+      (1, 'EMI / Loan', '🏦'),
+      (1, 'Groceries', '🛒'),
+      (1, 'Vegetables', '🥬'),
+      (1, 'Rent', '🏠'),
+      (1, 'Mobile / Internet', '📱'),
+      (1, 'Medical', '⚕️'),
+      (1, 'Education', '📚'),
+      (1, 'Transport', '🚗'),
+      (1, 'Other', '📌')
+      ON CONFLICT DO NOTHING;
+    `);
+    console.log('✓ Default categories initialized');
+    console.log('✅ Database ready!\n');
   } catch (err) {
-    console.error('❌ Seeding error:', err.message);
-    process.exit(1);
+    console.error('❌ Database error:', err.message);
   }
 }
 
-seedDatabase();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seed().then(() => process.exit(0)).catch(() => process.exit(1));
+}

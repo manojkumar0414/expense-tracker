@@ -5,8 +5,11 @@ import authRoutes from './auth.js';
 import expenseRoutes from './expenses.js';
 import categoryRoutes from './categories.js';
 import { authMiddleware } from './middleware.js';
+import { seed } from './seed.js';
 
 dotenv.config();
+
+seed();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
