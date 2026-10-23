@@ -99,4 +99,18 @@ input:focus, textarea:focus, select:focus {
     padding: var(--spacing-xs) var(--spacing-sm) !important;
     font-size: 12px !important;
   }
+
+  /* Mobile form inputs padding */
+  input[type="password"],
+  input[type="text"],
+  input[type="email"] {
+    padding: var(--spacing-sm) !important;
+    font-size: 16px !important;
+  }
+
+  /* Eye icon button on mobile */
+  div > button[type="button"] {
+    padding: var(--spacing-sm) var(--spacing-xs) !important;
+    font-size: 18px !important;
+  }
 }
