@@ -40,7 +40,7 @@ export default function SettingsPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5000/api/auth/change-password', {
+      const response = await fetch('https://expense-tracker-5bz6.onrender.com/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

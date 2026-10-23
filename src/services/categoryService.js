@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://expense-tracker-5bz6.onrender.com/api';
 
 // Get auth token from localStorage
 function getAuthToken() {
