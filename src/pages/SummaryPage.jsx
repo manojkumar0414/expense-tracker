@@ -46,10 +46,10 @@ export default function SummaryPage() {
     setShowResults(true);
   };
 
-  const totalAmount = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalAmount = filteredExpenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
   const categoryTotals = filteredExpenses.reduce((acc, exp) => {
     const category = exp.category || 'Unknown';
-    acc[category] = (acc[category] || 0) + exp.amount;
+    acc[category] = (acc[category] || 0) + (parseFloat(exp.amount) || 0);
     return acc;
   }, {});
 
