@@ -7,18 +7,19 @@ const router = express.Router();
 // Get all expenses for a user
 router.get('/', async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const expenses = await executeQuery(
-      `SELECT e.*, c.Name as CategoryName, c.Icon
-       FROM Expenses e
-       LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
-       WHERE e.UserId = @userId
-       ORDER BY e.Date DESC`,
-      { userId }
+      `SELECT e."ExpenseId", e."UserId", e."CategoryId", e."Amount", e."Date", e."Note", e."CreatedAt",
+              c."Name" as "CategoryName", c."Icon"
+       FROM "Expenses" e
+       LEFT JOIN "Categories" c ON e."CategoryId" = c."CategoryId"
+       WHERE e."UserId" = $1
+       ORDER BY e."Date" DESC`,
+      [userId]
     );
 
     res.json(expenses);
@@ -31,7 +32,7 @@ router.get('/', async (req, res) => {
 // Get expenses for a specific month
 router.get('/month/:month', async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     const { month } = req.params;
 
     if (!userId) {
@@ -44,14 +45,15 @@ router.get('/month/:month', async (req, res) => {
     const endDate = new Date(year, parseInt(monthNum), 0).toISOString().split('T')[0];
 
     const expenses = await executeQuery(
-      `SELECT e.*, c.Name as CategoryName, c.Icon
-       FROM Expenses e
-       LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
-       WHERE e.UserId = @userId
-       AND e.Date >= @startDate
-       AND e.Date <= @endDate
-       ORDER BY e.Date DESC`,
-      { userId, startDate, endDate }
+      `SELECT e."ExpenseId", e."UserId", e."CategoryId", e."Amount", e."Date", e."Note", e."CreatedAt",
+              c."Name" as "CategoryName", c."Icon"
+       FROM "Expenses" e
+       LEFT JOIN "Categories" c ON e."CategoryId" = c."CategoryId"
+       WHERE e."UserId" = $1
+       AND e."Date" >= $2
+       AND e."Date" <= $3
+       ORDER BY e."Date" DESC`,
+      [userId, startDate, endDate]
     );
 
     res.json(expenses);
@@ -64,7 +66,7 @@ router.get('/month/:month', async (req, res) => {
 // Add a new expense
 router.post('/', async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     const { amount, date, note, categoryId } = req.body;
 
     if (!userId || !amount || !date) {
@@ -75,42 +77,29 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Please select a category' });
     }
 
-    const result = await executeQuery(
-      `INSERT INTO Expenses (UserId, CategoryId, Amount, Date, Note, CreatedAt, UpdatedAt)
-       VALUES (@userId, @categoryId, @amount, @date, @note, GETDATE(), GETDATE())
-       SELECT SCOPE_IDENTITY() as ExpenseId`,
-      {
-        userId: parseInt(userId),
-        categoryId: parseInt(categoryId),
-        amount: parseInt(amount),
-        date: date,
-        note: note || ''
-      }
+    await executeQuery(
+      `INSERT INTO "Expenses" ("UserId", "CategoryId", "Amount", "Date", "Note", "CreatedAt")
+       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
+      [
+        parseInt(userId),
+        parseInt(categoryId),
+        parseFloat(amount),
+        date,
+        note || null
+      ]
     );
 
-    const expenseId = result[0]?.ExpenseId;
     const expense = await executeQuery(
-      `SELECT e.*, c.Name as CategoryName, c.Icon
-       FROM Expenses e
-       LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
-       WHERE e.ExpenseId = @expenseId`,
-      { expenseId }
+      `SELECT e."ExpenseId", e."UserId", e."CategoryId", e."Amount", e."Date", e."Note", e."CreatedAt",
+              c."Name" as "CategoryName", c."Icon"
+       FROM "Expenses" e
+       LEFT JOIN "Categories" c ON e."CategoryId" = c."CategoryId"
+       WHERE e."UserId" = $1 AND e."Date" = $2 AND e."Amount" = $3
+       ORDER BY e."CreatedAt" DESC LIMIT 1`,
+      [userId, date, parseFloat(amount)]
     );
 
-    if (expense && expense[0]) {
-      res.status(201).json(expense[0]);
-    } else {
-      res.status(201).json({
-        ExpenseId: expenseId,
-        UserId: parseInt(userId),
-        CategoryId: parseInt(categoryId),
-        Amount: parseInt(amount),
-        Date: date,
-        Note: note || '',
-        CategoryName: null,
-        Icon: null
-      });
-    }
+    res.status(201).json(expense[0]);
   } catch (err) {
     console.error('Error adding expense:', err.message);
     res.status(500).json({ error: 'Failed to add expense' });
@@ -120,7 +109,7 @@ router.post('/', async (req, res) => {
 // Update an expense
 router.put('/:id', async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     const { id } = req.params;
     const { amount, categoryId, date, note } = req.body;
 
@@ -130,8 +119,8 @@ router.put('/:id', async (req, res) => {
 
     // Verify expense belongs to user
     const existing = await executeQuery(
-      'SELECT ExpenseId FROM Expenses WHERE ExpenseId = @id AND UserId = @userId',
-      { id, userId }
+      'SELECT "ExpenseId" FROM "Expenses" WHERE "ExpenseId" = $1 AND "UserId" = $2',
+      [id, userId]
     );
 
     if (existing.length === 0) {
@@ -139,19 +128,20 @@ router.put('/:id', async (req, res) => {
     }
 
     await executeQuery(
-      `UPDATE Expenses
-       SET Amount = @amount, CategoryId = @categoryId, Date = @date, Note = @note, UpdatedAt = GETDATE()
-       WHERE ExpenseId = @id`,
-      { id, amount, categoryId, date, note: note || null }
+      `UPDATE "Expenses"
+       SET "Amount" = $1, "CategoryId" = $2, "Date" = $3, "Note" = $4
+       WHERE "ExpenseId" = $5`,
+      [parseFloat(amount), parseInt(categoryId), date, note || null, id]
     );
 
     // Fetch updated expense
     const expense = await executeQuery(
-      `SELECT e.*, c.Name as CategoryName, c.Icon
-       FROM Expenses e
-       LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
-       WHERE e.ExpenseId = @id`,
-      { id }
+      `SELECT e."ExpenseId", e."UserId", e."CategoryId", e."Amount", e."Date", e."Note", e."CreatedAt",
+              c."Name" as "CategoryName", c."Icon"
+       FROM "Expenses" e
+       LEFT JOIN "Categories" c ON e."CategoryId" = c."CategoryId"
+       WHERE e."ExpenseId" = $1`,
+      [id]
     );
 
     res.json(expense[0]);
@@ -164,7 +154,7 @@ router.put('/:id', async (req, res) => {
 // Delete an expense
 router.delete('/:id', async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     const { id } = req.params;
 
     if (!userId) {
@@ -173,8 +163,8 @@ router.delete('/:id', async (req, res) => {
 
     // Verify expense belongs to user
     const existing = await executeQuery(
-      'SELECT ExpenseId FROM Expenses WHERE ExpenseId = @id AND UserId = @userId',
-      { id, userId }
+      'SELECT "ExpenseId" FROM "Expenses" WHERE "ExpenseId" = $1 AND "UserId" = $2',
+      [id, userId]
     );
 
     if (existing.length === 0) {
@@ -182,8 +172,8 @@ router.delete('/:id', async (req, res) => {
     }
 
     await executeQuery(
-      'DELETE FROM Expenses WHERE ExpenseId = @id',
-      { id }
+      'DELETE FROM "Expenses" WHERE "ExpenseId" = $1',
+      [id]
     );
 
     res.json({ success: true, message: 'Expense deleted' });
