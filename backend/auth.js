@@ -16,8 +16,8 @@ router.post('/login', async (req, res) => {
 
     // Find user in database
     const users = await executeQuery(
-      'SELECT UserId, Username, Password FROM Users WHERE Username = @username',
-      { username }
+      'SELECT "UserId", "Username", "Password" FROM "Users" WHERE "Username" = $1',
+      [username]
     );
 
     if (users.length === 0) {
@@ -64,8 +64,8 @@ router.post('/register', async (req, res) => {
 
     // Check if user already exists
     const existing = await executeQuery(
-      'SELECT UserId FROM Users WHERE Username = @username',
-      { username }
+      'SELECT "UserId" FROM "Users" WHERE "Username" = $1',
+      [username]
     );
 
     if (existing.length > 0) {
@@ -77,8 +77,8 @@ router.post('/register', async (req, res) => {
 
     // Insert new user
     await executeQuery(
-      'INSERT INTO Users (Username, Password, Email) VALUES (@username, @password, @email)',
-      { username, password: hashedPassword, email: email || null }
+      'INSERT INTO "Users" ("Username", "Password", "Email") VALUES ($1, $2, $3)',
+      [username, hashedPassword, email || null]
     );
 
     res.json({ success: true, message: 'Registration successful! You can now login.' });
@@ -111,8 +111,8 @@ router.post('/change-password', authMiddleware, async (req, res) => {
 
     // Get user's current password hash
     const users = await executeQuery(
-      'SELECT Password FROM Users WHERE UserId = @userId',
-      { userId }
+      'SELECT "Password" FROM "Users" WHERE "UserId" = $1',
+      [userId]
     );
 
     if (users.length === 0) {
@@ -130,8 +130,8 @@ router.post('/change-password', authMiddleware, async (req, res) => {
 
     // Update password
     await executeQuery(
-      'UPDATE Users SET Password = @password WHERE UserId = @userId',
-      { password: hashedPassword, userId }
+      'UPDATE "Users" SET "Password" = $1 WHERE "UserId" = $2',
+      [hashedPassword, userId]
     );
 
     res.json({ success: true, message: 'Password changed successfully' });
