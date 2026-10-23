@@ -56,9 +56,10 @@ export default function AmountInput({ value, onChange, autoFocus = false }) {
               fontWeight: '600',
               border: 'none',
               borderBottom: `2px solid var(--color-primary)`,
-              padding: 'var(--spacing-md) 0',
+              padding: 'var(--spacing-md) var(--spacing-sm)',
               backgroundColor: 'transparent',
               color: 'var(--color-text)',
+              minHeight: '48px',
             }}
             onFocus={(e) => e.target.select()}
           />

@@ -108,9 +108,12 @@ div, button, span, p {
   /* Mobile form inputs padding */
   input[type="password"],
   input[type="text"],
-  input[type="email"] {
+  input[type="email"],
+  input[type="number"],
+  input[type="date"] {
     padding: var(--spacing-sm) !important;
     font-size: 16px !important;
+    min-height: 44px !important;
   }
 
   /* Eye icon button on mobile */
