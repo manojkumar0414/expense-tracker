@@ -33,7 +33,7 @@ export default function HomePage() {
     await loadExpensesForMonth(newMonth);
   };
 
-  const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalAmount = expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
 
   return (
     <div>
@@ -139,7 +139,7 @@ export default function HomePage() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
                 gap: 'var(--spacing-md)',
               }}
             >
