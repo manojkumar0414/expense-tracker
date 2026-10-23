@@ -5,8 +5,13 @@ dotenv.config();
 
 const { Pool } = pkg;
 
+const dbUrl = process.env.DATABASE_URL || 'postgresql://admin:Espa517FJP9qSOTePZ7pJ7SVWo1Bb0bDC@dpg-dbdpd90ae00c73ai8rc0-a.oregon-postgres.render.com/expensetracker_mdtg';
+
+console.log(`📊 Database URL set: ${dbUrl ? 'Yes' : 'No'}`);
+console.log(`🔐 Using: ${dbUrl ? 'Environment variable' : 'Fallback URL'}`);
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://admin:Espa517FJP9qSOTePZ7pJ7SVWo1Bb0bDC@dpg-dbdpd90ae00c73ai8rc0-a.oregon-postgres.render.com/expensetracker_mdtg',
+  connectionString: dbUrl,
   ssl: {
     rejectUnauthorized: false,
   },
@@ -17,7 +22,7 @@ pool.on('connect', () => {
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Pool error:', err);
+  console.error('❌ Pool error:', err.message);
 });
 
 export async function executeQuery(query, params = []) {
