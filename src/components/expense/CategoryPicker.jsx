@@ -33,7 +33,7 @@ export default function CategoryPicker({ categories, selectedId, onSelect }) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))',
           gap: 'var(--spacing-md)',
         }}
       >
