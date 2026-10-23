@@ -25,18 +25,21 @@ pool.on('error', (err) => {
   console.error('❌ Pool error:', err.message);
 });
 
-export async function executeQuery(query, params = []) {
-  try {
-    const client = await pool.connect();
+export async function executeQuery(query, params = [], retries = 3) {
+  for (let i = 0; i < retries; i++) {
     try {
-      const result = await client.query(query, params);
-      return result.rows;
-    } finally {
-      client.release();
+      const client = await pool.connect();
+      try {
+        const result = await client.query(query, params);
+        return result.rows;
+      } finally {
+        client.release();
+      }
+    } catch (err) {
+      console.error(`Query error (attempt ${i + 1}/${retries}):`, err.message);
+      if (i === retries - 1) throw err;
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
-  } catch (err) {
-    console.error('Query error:', err.message);
-    throw err;
   }
 }
 
