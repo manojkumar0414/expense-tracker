@@ -38,6 +38,25 @@ export async function seed() {
       );
     `);
     console.log('✓ Expenses table created');
+
+    // Insert default categories for userId=1
+    await executeQuery(`
+      INSERT INTO "Categories" ("UserId", "Name", "Icon") VALUES
+      (1, 'Milk', '🥛'),
+      (1, 'Gas', '⛽'),
+      (1, 'Electricity', '⚡'),
+      (1, 'EMI / Loan', '🏦'),
+      (1, 'Groceries', '🛒'),
+      (1, 'Vegetables', '🥬'),
+      (1, 'Rent', '🏠'),
+      (1, 'Mobile / Internet', '📱'),
+      (1, 'Medical', '⚕️'),
+      (1, 'Education', '📚'),
+      (1, 'Transport', '🚗'),
+      (1, 'Other', '📌')
+      ON CONFLICT DO NOTHING;
+    `);
+    console.log('✓ Default categories initialized');
     console.log('✅ Database ready! Tables created. You can now register and create your own users.\n');
   } catch (err) {
     console.error('❌ Database error:', err.message);
