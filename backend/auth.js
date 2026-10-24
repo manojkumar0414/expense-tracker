@@ -75,11 +75,36 @@ router.post('/register', async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert new user
-    await executeQuery(
-      'INSERT INTO "Users" ("Username", "Password", "Email") VALUES ($1, $2, $3)',
+    // Insert new user and get the new UserId
+    const newUser = await executeQuery(
+      'INSERT INTO "Users" ("Username", "Password", "Email") VALUES ($1, $2, $3) RETURNING "UserId"',
       [username, hashedPassword, email || null]
     );
+
+    const newUserId = newUser[0].UserId;
+
+    // Create default categories for new user
+    const defaultCategories = [
+      [newUserId, 'Milk', '🥛'],
+      [newUserId, 'Gas', '⛽'],
+      [newUserId, 'Electricity', '⚡'],
+      [newUserId, 'EMI / Loan', '🏦'],
+      [newUserId, 'Groceries', '🛒'],
+      [newUserId, 'Vegetables', '🥬'],
+      [newUserId, 'Rent', '🏠'],
+      [newUserId, 'Mobile / Internet', '📱'],
+      [newUserId, 'Medical', '⚕️'],
+      [newUserId, 'Education', '📚'],
+      [newUserId, 'Transport', '🚗'],
+      [newUserId, 'Other', '📌'],
+    ];
+
+    for (const [uid, name, icon] of defaultCategories) {
+      await executeQuery(
+        'INSERT INTO "Categories" ("UserId", "Name", "Icon") VALUES ($1, $2, $3)',
+        [uid, name, icon]
+      );
+    }
 
     res.json({ success: true, message: 'Registration successful! You can now login.' });
   } catch (err) {
