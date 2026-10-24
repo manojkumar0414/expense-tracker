@@ -3,7 +3,7 @@ import { executeQuery } from './db.js';
 
 const router = express.Router();
 
-// Get all categories for a user
+// Get all categories (shared system categories for all users)
 router.get('/', async (req, res) => {
   try {
     const userId = req.user?.userId;
@@ -11,9 +11,10 @@ router.get('/', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // All users see categories created for userId=1 (system categories)
     const categories = await executeQuery(
-      'SELECT "CategoryId" as id, "Name" as name, "Icon" as icon FROM "Categories" WHERE "UserId" = $1 ORDER BY "CategoryId"',
-      [userId]
+      'SELECT "CategoryId" as id, "Name" as name, "Icon" as icon FROM "Categories" WHERE "UserId" = 1 ORDER BY "CategoryId"',
+      []
     );
 
     res.json(categories);
@@ -38,7 +39,7 @@ router.post('/', async (req, res) => {
     }
 
     await executeQuery(
-      `INSERT INTO "Categories" ("UserId", "Name", "Icon", "CreatedAt") VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+      'INSERT INTO "Categories" ("UserId", "Name", "Icon", "CreatedAt") VALUES ($1, $2, $3, CURRENT_TIMESTAMP)',
       [userId, name, icon || null]
     );
 
