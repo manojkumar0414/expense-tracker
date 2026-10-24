@@ -39,6 +39,14 @@ export async function seed() {
     `);
     console.log('✓ Expenses table created');
 
+    // Create default user if doesn't exist
+    await executeQuery(`
+      INSERT INTO "Users" ("Username", "Password", "Email")
+      VALUES ('admin', 'demo123', 'admin@example.com')
+      ON CONFLICT ("Username") DO NOTHING;
+    `);
+    console.log('✓ Default user created');
+
     // Insert default categories for userId=1
     await executeQuery(`
       INSERT INTO "Categories" ("UserId", "Name", "Icon") VALUES
