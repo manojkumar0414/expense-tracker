@@ -47,6 +47,12 @@ export async function seed() {
     `);
     console.log('✓ Default user created');
 
+    // Clean up duplicate categories - keep only userId=1 system categories
+    await executeQuery(`
+      DELETE FROM "Categories" WHERE "UserId" != 1;
+    `);
+    console.log('✓ Cleaned up duplicate categories');
+
     // Insert default categories for userId=1
     await executeQuery(`
       INSERT INTO "Categories" ("UserId", "Name", "Icon") VALUES
